@@ -119,6 +119,7 @@ body {
   min-width: 100px;
   border: 1px solid #e8e8e8;
 }
+
 #create .button {
   flex-grow: 0;
   white-space: nowrap;
@@ -186,6 +187,11 @@ body {
   text-transform: uppercase;
   text-align: center;
   font-size: 1.4em;
+  transition: background 0.2s ease-in-out;
+}
+
+#logout:hover, #create .button:hover {
+  background: #e8e8e8;
 }
 
 #control {
