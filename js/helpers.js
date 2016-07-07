@@ -95,7 +95,7 @@ function createKey(pid, key) {
  * Get the value contained in a key.
  */
 function getValue(project, key) {
-  return getCell(project, key).fetch()
+  return getKey(project, key).fetch()
 }
 
 /**
