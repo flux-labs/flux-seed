@@ -179,6 +179,7 @@ body {
 }
 
 .select {
+  min-height: 4em;
   border:1px solid #e8e8e8;
   overflow: hidden; 
   position: relative;
