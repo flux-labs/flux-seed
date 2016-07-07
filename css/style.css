@@ -280,7 +280,7 @@ select{
 }
 
 #output .label {
-  top: 1.5em;
+  top: 1em;
 }
 
 #geometry .label {
