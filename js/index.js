@@ -159,6 +159,29 @@ function initKeys() {
 }
 
 /**
+ * Initialize the create key input + button.
+ */
+function initCreate() {
+  $('#create .button').on('click', (e) => {
+    // get the input field
+    let input = $(e.target).parent().find('input')
+    // get the input field value
+    let value = input.val()
+    // check we have a name
+    if (value === '') return
+    // check we have a project selected
+    if (!selectedProject) return
+    // create the key (returns a promise)
+    createKey(selectedProject, value).then(() => {
+      // clear the input
+      input.val('')
+      // refresh the key select boxes
+      fetchKeys()
+    })
+  })
+}
+
+/**
  * Initialize the 3D viewport.
  */
 function initViewport() {
@@ -195,6 +218,8 @@ function init() {
     initViewport()
     // prepare the key select boxes
     initKeys()
+    // prepare the create key input + button
+    initCreate()
     // get the user's projects from Flux
     fetchProjects()
   }).catch(showLogin)

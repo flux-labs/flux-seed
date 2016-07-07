@@ -87,8 +87,10 @@ function getKey(project, key) {
 /**
  * Create a project key in Flux.
  */
-function createKey(pid, key) {
-  return new sdk.Cell(getFluxCredentials(), pid, key)
+function createKey(project, name) {
+  let dt = getDataTable(project).table
+  return dt.createCell(name, {description: name, value: ''})
+  // return new sdk.Cell(getFluxCredentials(), project.id, name)
 }
 
 /**

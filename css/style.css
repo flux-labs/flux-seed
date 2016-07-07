@@ -90,18 +90,38 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 60%;
+  height: 50%;
   box-sizing: border-box;
-  padding: 1em 2em 2em 1em;
+  padding: 1em 2em 1em 1em;
 }
 
 #input {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 40%;
+  height: 36%;
   box-sizing: border-box;
   padding: 2em 2em 1em 1em;
+}
+
+#create {
+  position: relative;
+  display: flex;
+  height: 14%;
+  box-sizing: border-box;
+  padding: 1em 2em 2em 1em;
+}
+
+#create input {
+  padding: 0em 1em;
+  font-size: 1.4em;
+  flex-grow: 1;
+  min-width: 100px;
+  border: 1px solid #e8e8e8;
+}
+#create .button {
+  flex-grow: 0;
+  white-space: nowrap;
 }
 
 #view {
@@ -154,7 +174,7 @@ body {
   font-size: 1.5em;
 }
 
-#logout {
+#logout, #create .button {
   display: flex;
   align-items: center;
   height: 100%;
@@ -195,6 +215,7 @@ select{
   -moz-appearance: none;
   appearance: none;
 }
+
 .select:after {
   content:"▼";    
   /*padding: 12px 8px;*/
