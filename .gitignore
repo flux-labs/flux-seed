@@ -1,0 +1,14 @@
+logs
+*.log
+npm-debug.log*
+pids
+*.pid
+*.seed
+.lock-wscript
+node_modules
+.npm
+config.js
+*.bak.*
+*.hgt
+ssl
+TODO
