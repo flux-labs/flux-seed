@@ -165,7 +165,7 @@ function initKeys() {
     // and if we have a key
     if (key) {
       // tell flux to update the key with this new value
-      updateKeyValue(selectedProject, key, e.target.value)
+      updateKeyValue(selectedProject, key, parseFloat(e.target.value))
     }
   })
 
