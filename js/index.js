@@ -97,9 +97,16 @@ function initKeys() {
     // if we have both a project and a key
     if (selectedProject && selectedKey) {
       // get the value of the key (returns a promise)
+      $('#view-error').hide()
       getValue(selectedProject, selectedKey).then((data) => {
-        // and add it to the viewport
-        viewport.setGeometryEntity(data.value)
+        // check if its valid geometry
+        if (FluxViewport.isKnownGeom(data.value)) {
+          // and add it to the viewport
+          viewport.setGeometryEntity(data.value)
+        } else {
+          // show error
+          $('#view-error').show()
+        }
       })
     }
   })
@@ -119,6 +126,14 @@ function initKeys() {
       let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
       // apply the new text size to the content
       $('#display .content').html(d).css('font-size', size+'em')
+      // if the content is json
+      if (d[0] === '[' || d[0] === '{') {
+        // align left
+        $('#display .content').css('text-align', 'left')
+      } else {
+        // align center
+        $('#display .content').css('text-align', 'center')
+      }
     }
     // if we have both a project and a key
     if (selectedProject && selectedKey) {
@@ -185,6 +200,8 @@ function initCreate() {
  * Initialize the 3D viewport.
  */
 function initViewport() {
+  // hide the error screen
+  $('#view-error').hide()
   // attach the viewport to the #div view
   viewport = new FluxViewport(document.querySelector("#view"))
   // set up default lighting for the viewport

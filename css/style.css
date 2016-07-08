@@ -126,6 +126,7 @@ body {
 }
 
 #view {
+  position: relative;
   flex-grow: 1;
   z-index: 0;
   width: 100%;
@@ -133,6 +134,21 @@ body {
   box-sizing: border-box;
   border-bottom: 0;
   top: 0;
+}
+
+#view-error {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  position: absolute;
+  z-index: 10000;
+  font-size: 1.4em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
 }
 
 #title {
@@ -271,11 +287,11 @@ select{
 
 .label {
   position: absolute;
+  background: #ffffff;
   top: 2em;
   left: 1em;
   z-index: 10000;
-  border-right: 1px solid #e8e8e8;
-  border-bottom: 1px solid #e8e8e8;
+  border: 1px solid #e8e8e8;
   padding: 1em;
 }
 

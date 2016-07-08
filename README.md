@@ -1,6 +1,6 @@
 #Flux: Seed Project
 
-This is a seed project for you to get started developing Flux apps with the web SDK.
+This is a [seed project](https://seed.flux.kitchen) for you to get started developing Flux apps with the web SDK.
 This project includes some of the essential concepts for working with Flux: a 3D viewport for viewing geometry data,
 an slider for sending numerical data to Flux, a display box for viewing data from Flux, and an input for creating a Flux key.
 The application logic is contained in js/index.js, and the SDK calls in js/helpers.js.  
