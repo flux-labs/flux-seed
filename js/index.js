@@ -95,18 +95,25 @@ function initKeys() {
     // find the key that was clicked on
     let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
     // if we have both a project and a key
+    const render = (data) => {
+      // check if its valid geometry
+      if (FluxViewport.isKnownGeom(data.value)) {
+        // and add it to the viewport
+        viewport.setGeometryEntity(data.value)
+      } else {
+        // show error
+        $('#view-error').show()
+      }
+    }
     if (selectedProject && selectedKey) {
       // get the value of the key (returns a promise)
       $('#view-error').hide()
       getValue(selectedProject, selectedKey).then((data) => {
-        // check if its valid geometry
-        if (FluxViewport.isKnownGeom(data.value)) {
-          // and add it to the viewport
-          viewport.setGeometryEntity(data.value)
-        } else {
-          // show error
-          $('#view-error').show()
-        }
+        // and render it with the function above
+        render(data)
+        // whenever the data on Flux changes, get the live update
+        // and re-render it (websocket connection)
+        onKeyChange(selectedProject, selectedKey, render)
       })
     }
   })
