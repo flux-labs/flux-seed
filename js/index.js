@@ -1,20 +1,5 @@
 let viewport, projects, selectedProject, projectKeys
 
-// Check if we're coming back from Flux with the login credentials.
-setFluxLogin()
-
-/**
- * Check if the user is logged in.
- */
-function checkLogin() {
-  // get the credentials from local storage
-  let credentials = getFluxCredentials()
-  // if the user doesn't have credentials, reject the promise
-  if (!credentials) return Promise.reject()
-  // else resolve it
-  return Promise.resolve()
-}
-
 /**
  * Hide the login page and attach events to the logout button.
  */
@@ -29,12 +14,11 @@ function hideLogin() {
  * Show the login page and attach events to the login button.
  */
 function showLogin(err) {
-  // remove the credentials from local storage
-  localStorage.removeItem('fluxCredentials')
+  FluxSDK_Login_Helper.clearFluxCredentials()
   // show the login button
   $('#login').css('display', 'flex')
   // attach event handler to the login button
-  $('#login .button').click(getFluxLogin)
+  $('#login .button').click(FluxSDK_Login_Helper.gotoFluxLogin)
 }
 
 /**
@@ -235,7 +219,7 @@ function animate() {
  */
 function init() {
   // check that the user is logged in, otherwise show the login page
-  checkLogin().then(() => {
+  FluxSDK_Login_Helper.checkLogin().then(() => {
     // if logged in, make sure the login page is hidden
     hideLogin()
     // create the viewport
