@@ -91,7 +91,7 @@ function fetchKeys() {
  */
 function initKeys() {
   // attach a function to the change event of the viewport's key select box
-  $('#geometry select.key').on('change', (e) => {
+  $('#output select.key').on('change', (e) => {
     // find the key that was clicked on
     let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
     // if we have both a project and a key
@@ -100,51 +100,37 @@ function initKeys() {
       if (FluxViewport.isKnownGeom(data.value)) {
         // and add it to the viewport
         viewport.setGeometryEntity(data.value)
+
+        $('#geometry').show()
+        $('#display').hide()
       } else {
-        // show error
-        $('#view-error').show()
+        // not geometry, so figure out how to best render the type
+        // check if the value is a number
+        let d = parseFloat(data.value)
+        // otherwise make it into a string
+        if (isNaN(d)) d = JSON.stringify(data.value)
+        else d = d + ''
+        // calculate the approximate display size for the text
+        // based on the ammount of content (length)
+        let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
+        // apply the new text size to the content
+        $('#display .content').html(d).css('font-size', size+'em')
+        // if the content is json
+        if (d[0] === '[' || d[0] === '{') {
+          // align left
+          $('#display .content').css('text-align', 'left')
+        } else {
+          // align center
+          $('#display .content').css('text-align', 'center')
+        }
+
+        $('#geometry').hide()
+        $('#display').show()
       }
     }
     if (selectedProject && selectedKey) {
       // get the value of the key (returns a promise)
       $('#view-error').hide()
-      getValue(selectedProject, selectedKey).then((data) => {
-        // and render it with the function above
-        render(data)
-        // whenever the data on Flux changes, get the live update
-        // and re-render it (websocket connection)
-        onKeyChange(selectedProject, selectedKey, render)
-      })
-    }
-  })
-
-  // attach a function to the change event of the output select box
-  $('#output select.key').on('change', (e) => {
-    // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
-    const render = (data) => {
-      // check if the value is a number
-      let d = parseFloat(data.value)
-      // otherwise make it into a string
-      if (isNaN(d)) d = JSON.stringify(data.value)
-      else d = d + ''
-      // calculate the approximate display size for the text
-      // based on the ammount of content (length)
-      let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
-      // apply the new text size to the content
-      $('#display .content').html(d).css('font-size', size+'em')
-      // if the content is json
-      if (d[0] === '[' || d[0] === '{') {
-        // align left
-        $('#display .content').css('text-align', 'left')
-      } else {
-        // align center
-        $('#display .content').css('text-align', 'center')
-      }
-    }
-    // if we have both a project and a key
-    if (selectedProject && selectedKey) {
-      // get the value of the key (returns a promise)
       getValue(selectedProject, selectedKey).then((data) => {
         // and render it with the function above
         render(data)

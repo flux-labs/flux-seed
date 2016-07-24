@@ -44,12 +44,15 @@
       <div id='content'>
         <!-- left column -->
         <div class='column'>
-          <!-- geometry viewport -->
-          <div id='geometry'>
-            <div class='label'>Viewport</div>
-            <div id='view'>
-              <div id="view-error">Please select valid geometry</div>
-              
+          <div id='output'>
+            <div class='label'>From Flux</div>
+            <!-- geometry viewport -->
+            <div id='geometry'>
+              <div id='view'></div>
+            </div>
+            <!-- general display -->
+            <div id='display'>
+              <div class='content'></div>
             </div>
             <div class='select'><select class='key'></select></div>
           </div>
@@ -61,14 +64,6 @@
             <div class='label'>To Flux: <span class='value'></span></div>
             <div id='control'>
               <input type='range'/>
-            </div>
-            <div class='select'><select class='key'></select></div>
-          </div>
-          <!-- output section -->
-          <div id='output'>
-            <div class='label'>From Flux</div>
-            <div id='display'>
-              <div class='content'></div>
             </div>
             <div class='select'><select class='key'></select></div>
           </div>
