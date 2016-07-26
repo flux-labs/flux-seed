@@ -7,12 +7,13 @@ The application logic is contained in js/index.js, and the SDK calls in js/helpe
 
 ### Usage
 
-* Download or clone this repository. ``` git clone https://github.com/flux-labs/flux-seed.git) ```
+* Download or clone this repository. ``` git clone https://github.com/flux-labs/flux-seed.git ```
 * Sign up for a [Flux account](https://flux.io/) if you don't have one already. 
 * Register your project and get a [Flux Client ID](https://flux.io/developer/apps/).
 * Rename the config file from js/config.sample.js to js/config.js and insert your Client ID.
 * Set up and run an HTTP server from your project directory.
-  * PYTHON: ``` python -m SimpleHTTPServer 8080 ```
-  * NODEJS: ``` npm install -g live-server; live-server ```
+  * PYTHON 2.x: ``` python -m SimpleHTTPServer 8080 ```
+  * PYTHON 3.x: ``` python -m http.server 8080 ```
+  * NODEJS: ``` sudo npm install -g live-server; live-server ```
 * Open your browser to http://localhost:8080
 * Enjoy!

@@ -7,7 +7,7 @@ pids
 .lock-wscript
 node_modules
 .npm
-config.js
+config.prod.js
 *.bak.*
 *.hgt
 ssl
