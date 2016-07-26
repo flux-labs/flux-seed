@@ -110,40 +110,25 @@ function updateKeyValue(project, key, value) {
 }
 
 /**
- * Subscribe to the changes in a key with websockets.
+ * Creates a websocket for a project that listens for data table events, and calls 
+ * the supplied handler function
  */
-function onKeyChange(project, key, cb) {
-  let pid = project.id
-  let kid = key.id
-  let dt = getDataTable(project)
+function createWebSocket(project, notificationHandler){
+  let dataTable = getDataTable(project)
   let options = {
-    onOpen: () => console.log('Websocket opened for '+ pid + ' ' + kid + '.'),
-    onError: () => console.log('Websocket error for '+ pid + ' ' + kid + '.')
-  }
-
-  // function that calls the correct handlers for particular key ids, if set.
-  const websocketRefHandler = (msg) => {
-    console.log('Notification received.', msg)
-    if (dt.handlers.hasOwnProperty(msg.body.id)) {
-      console.log('Calling handlers for '+ pid + ' ' + kid + '.')
-      dt.handlers[msg.body.id](msg)
-    } else console.log('Received a notification, but key id is not matched by any callback handlers.')
-  }
-
-  // the handler for this key
-  dt.handlers[kid] = (msg) => {
-    if (msg.body.id === kid) {
-      this.getValue(project, key).then(cb)
-    }
+    onOpen: () => console.log('Websocket opened.'),
+    onError: () => console.log('Websocket error.')
   }
 
   // if this data table doesn't have websockets open
-  if (!dt.websocketOpen) {
-    dt.websocketOpen = true
+  if (!dataTable.websocketOpen) {
+    dataTable.websocketOpen = true
     // open them
-    dt.table.openWebSocket(options)
+    dataTable.table.openWebSocket(options)
+
     // and attach the handler we created above
-    dt.table.addWebSocketHandler(websocketRefHandler)
+    if(notificationHandler)
+      dataTable.table.addWebSocketHandler(notificationHandler)
   }
 }
 

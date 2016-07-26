@@ -1,4 +1,4 @@
-let viewport, projects, selectedProject, projectKeys
+let viewport, projects, selectedProject, projectKeys, selectedOutputKey
 
 // Check if we're coming back from Flux with the login credentials.
 setFluxLogin()
@@ -60,6 +60,22 @@ function fetchProjects() {
       // find the project that was clicked on, and assign it to the global
       // variable 'selectedProject'
       selectedProject = projects.filter((p) => p.id === e.target.value)[0]
+
+      const notificationHandler = (msg) => {
+        //write all events to the app console
+        let console = $('#console')
+        console.val(console.val() + msg.type + ': \'' + msg.body.label + '\'\n')
+
+        if(msg.type === "CELL_MODIFIED"){
+          //only render when the modification involves the selected output
+          if(selectedOutputKey && (selectedOutputKey.id === msg.body.id))
+            this.getValue(selectedProject, selectedOutputKey).then(render)
+        }
+      }
+
+      //listens and responds to changes on flux using our handler
+      createWebSocket(selectedProject, notificationHandler)
+
       // now go fetch the project's keys
       fetchKeys()
     })
@@ -83,7 +99,50 @@ function fetchKeys() {
     options.unshift('<option>Please select a key</option>')
     // make sure the select box is empty and then insert the new options
     $('select.key').empty().append(options)
+    //clear the display by rendering with null data
+    render(null)
   })
+}
+
+const render = (data) => {
+  //check to see if data is available to render
+  if(!data){
+    //empty the display and hide the geometry viewport
+    $('#display .content').empty()
+    $('#display').show()
+    $('#geometry').hide()
+  }
+  //check to see if the data is a known type of geometry
+  else if (FluxViewport.isKnownGeom(data.value)) {
+    //add it to the viewport
+    viewport.setGeometryEntity(data.value)
+    //swap the display types
+    $('#geometry').show()
+    $('#display').hide()
+  } else {
+    // not geometry, so figure out how to best render the type
+    // check if the value is a number
+    let d = parseFloat(data.value)
+    // otherwise make it into a string
+    if (isNaN(d)) d = JSON.stringify(data.value)
+    else d = d + ''
+    // calculate the approximate display size for the text
+    // based on the ammount of content (length)
+    let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
+    // apply the new text size to the content
+    $('#display .content').html(d).css('font-size', size+'em')
+    // if the content is json
+    if (d[0] === '[' || d[0] === '{') {
+      // align left
+      $('#display .content').css('text-align', 'left')
+    } else {
+      // align center
+      $('#display .content').css('text-align', 'center')
+    }
+    //swap the display types
+    $('#geometry').hide()
+    $('#display').show()
+  }
 }
 
 /**
@@ -91,66 +150,15 @@ function fetchKeys() {
  */
 function initKeys() {
   // attach a function to the change event of the viewport's key select box
-  $('#geometry select.key').on('change', (e) => {
-    // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
-    // if we have both a project and a key
-    const render = (data) => {
-      // check if its valid geometry
-      if (FluxViewport.isKnownGeom(data.value)) {
-        // and add it to the viewport
-        viewport.setGeometryEntity(data.value)
-      } else {
-        // show error
-        $('#view-error').show()
-      }
-    }
-    if (selectedProject && selectedKey) {
-      // get the value of the key (returns a promise)
-      $('#view-error').hide()
-      getValue(selectedProject, selectedKey).then((data) => {
-        // and render it with the function above
-        render(data)
-        // whenever the data on Flux changes, get the live update
-        // and re-render it (websocket connection)
-        onKeyChange(selectedProject, selectedKey, render)
-      })
-    }
-  })
-
-  // attach a function to the change event of the output select box
   $('#output select.key').on('change', (e) => {
     // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
-    const render = (data) => {
-      // check if the value is a number
-      let d = parseFloat(data.value)
-      // otherwise make it into a string
-      if (isNaN(d)) d = JSON.stringify(data.value)
-      else d = d + ''
-      // calculate the approximate display size for the text
-      // based on the ammount of content (length)
-      let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
-      // apply the new text size to the content
-      $('#display .content').html(d).css('font-size', size+'em')
-      // if the content is json
-      if (d[0] === '[' || d[0] === '{') {
-        // align left
-        $('#display .content').css('text-align', 'left')
-      } else {
-        // align center
-        $('#display .content').css('text-align', 'center')
-      }
-    }
-    // if we have both a project and a key
-    if (selectedProject && selectedKey) {
+    selectedOutputKey = projectKeys.filter((k) => k.id === e.target.value)[0]
+    
+    if (selectedProject && selectedOutputKey) {
       // get the value of the key (returns a promise)
-      getValue(selectedProject, selectedKey).then((data) => {
-        // and render it with the function above
+      getValue(selectedProject, selectedOutputKey).then((data) => {
+        // and render it
         render(data)
-        // whenever the data on Flux changes, get the live update
-        // and re-render it (websocket connection)
-        onKeyChange(selectedProject, selectedKey, render)
       })
     }
   })

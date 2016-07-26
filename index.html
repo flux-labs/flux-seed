@@ -12,7 +12,7 @@
     <!-- configuration variables -->
     <script src="js/config.js"></script>
     <!-- the Flux Viewport -->
-    <script src="https://npmcdn.com/flux-viewport@0.5.0/dist/flux-viewport-bundle.global.js"></script>
+    <script src="https://npmcdn.com/flux-viewport@0.8.0/dist/flux-viewport-bundle.global.js"></script>
     <!-- the Flux JS SDK -->
     <script src="https://npmcdn.com/flux-sdk-browser@0.3.2/dist/flux-sdk-min.js"></script>
     <!-- helper functions for using the Flux SDK -->
@@ -44,12 +44,15 @@
       <div id='content'>
         <!-- left column -->
         <div class='column'>
-          <!-- geometry viewport -->
-          <div id='geometry'>
-            <div class='label'>Viewport</div>
-            <div id='view'>
-              <div id="view-error">Please select valid geometry</div>
-              
+          <div id='output'>
+            <div class='label'>From Flux</div>
+            <!-- geometry viewport -->
+            <div id='geometry'>
+              <div id='view'></div>
+            </div>
+            <!-- general display -->
+            <div id='display'>
+              <div class='content'></div>
             </div>
             <div class='select'><select class='key'></select></div>
           </div>
@@ -64,17 +67,12 @@
             </div>
             <div class='select'><select class='key'></select></div>
           </div>
-          <!-- output section -->
-          <div id='output'>
-            <div class='label'>From Flux</div>
-            <div id='display'>
-              <div class='content'></div>
-            </div>
-            <div class='select'><select class='key'></select></div>
-          </div>
           <div id='create'>
             <input type='text'></input>
             <div class='button'>CREATE KEY</div>
+          </div>
+          <div id='notifications'>
+            <textarea id='console'></textarea>
           </div>
         </div>
       </div>
