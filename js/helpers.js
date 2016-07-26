@@ -1,6 +1,6 @@
 // instantiate the Flux SDK with your appliation key
-let sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
-let dataTables = {}
+var sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
+var dataTables = {}
 
 /**
  * Redirect the user to the Flux login page.
@@ -50,7 +50,7 @@ function getUser() {
  */
 function getDataTable(project) {
   if (!(project.id in dataTables)) {
-    let dt = new sdk.Project(getFluxCredentials(), project.id).getDataTable()
+    var dt = new sdk.Project(getFluxCredentials(), project.id).getDataTable()
     dataTables[project.id] = { table: dt, handlers: {}, websocketOpen: false }
   }
   return dataTables[project.id]
@@ -88,7 +88,7 @@ function getKey(project, key) {
  * Create a project key in Flux.
  */
 function createKey(project, name) {
-  let dt = getDataTable(project).table
+  var dt = getDataTable(project).table
   return dt.createCell(name, {description: name, value: ''})
   // return new sdk.Cell(getFluxCredentials(), project.id, name)
 }
@@ -104,8 +104,8 @@ function getValue(project, key) {
  * Update the value in a project key.
  */
 function updateKeyValue(project, key, value) {
-  let credentials = getFluxCredentials()
-  let cell = new sdk.Cell(credentials, project.id, key.id)
+  var credentials = getFluxCredentials()
+  var cell = new sdk.Cell(credentials, project.id, key.id)
   cell.update({value: value})
 }
 
@@ -114,10 +114,10 @@ function updateKeyValue(project, key, value) {
  * the supplied handler function
  */
 function createWebSocket(project, notificationHandler){
-  let dataTable = getDataTable(project)
-  let options = {
-    onOpen: () => console.log('Websocket opened.'),
-    onError: () => console.log('Websocket error.')
+  var dataTable = getDataTable(project)
+  var options = {
+    onOpen: function() { console.log('Websocket opened.') },
+    onError: function() { console.log('Websocket error.') }
   }
 
   // if this data table doesn't have websockets open
@@ -136,10 +136,10 @@ function createWebSocket(project, notificationHandler){
  * Generate a random token.
  */
 function generateRandomToken() {
-  let tokenLength = 24
-  let randomArray = []
-  let characterSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  for (let i = 0; i < tokenLength; i++) {
+  var tokenLength = 24
+  var randomArray = []
+  var characterSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  for (var i = 0; i < tokenLength; i++) {
     randomArray.push(Math.floor(Math.random() * tokenLength))
   }
   return btoa(randomArray.join('')).slice(0, 48)
@@ -149,7 +149,7 @@ function generateRandomToken() {
  * Generate a token for use in the login.
  */
 function getState() {
-  let state = localStorage.getItem('state') || generateRandomToken()
+  var state = localStorage.getItem('state') || generateRandomToken()
   localStorage.setItem('state', state)
   return state
 }
@@ -158,7 +158,7 @@ function getState() {
  * Generate a token for use in the login.
  */
 function getNonce() {
-  let nonce = localStorage.getItem('nonce') || generateRandomToken()
+  var nonce = localStorage.getItem('nonce') || generateRandomToken()
   localStorage.setItem('nonce', nonce)
   return nonce
 }

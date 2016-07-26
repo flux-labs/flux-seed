@@ -1,4 +1,4 @@
-let viewport, projects, selectedProject, projectKeys, selectedOutputKey
+var viewport, projects, selectedProject, projectKeys, selectedOutputKey
 
 // Check if we're coming back from Flux with the login credentials.
 setFluxLogin()
@@ -8,7 +8,7 @@ setFluxLogin()
  */
 function checkLogin() {
   // get the credentials from local storage
-  let credentials = getFluxCredentials()
+  var credentials = getFluxCredentials()
   // if the user doesn't have credentials, reject the promise
   if (!credentials) return Promise.reject()
   // else resolve it
@@ -42,11 +42,11 @@ function showLogin(err) {
  */
 function fetchProjects() {
   // get the user's projects from flux (returns a promise)
-  getProjects().then((data) => {
+  getProjects().then(function(data) {
     projects = data.entities
     // for each project, create an option for the select box with
     // the project.id as the value and the project.name as the label
-    let options = projects.map((project) => {
+    var options = projects.map(function(project) {
       return $('<option>').val(project.id).text(project.name)
     })
     // insert the default text as the first option
@@ -56,26 +56,24 @@ function fetchProjects() {
     // empty out the project key select boxes
     $('select.key').empty()
     // attach a function to the select box change event
-    $('select.project').on('change', (e) => {
+    $('select.project').on('change', function(e) {
       // find the project that was clicked on, and assign it to the global
       // variable 'selectedProject'
-      selectedProject = projects.filter((p) => p.id === e.target.value)[0]
-
-      const notificationHandler = (msg) => {
+      selectedProject = projects.filter(function(p) { return p.id === e.target.value })[0]
+      var c = $('#console')
+      c.val('')
+      var notificationHandler = function(msg) {
         //write all events to the app console
-        let console = $('#console')
-        console.val(console.val() + msg.type + ': \'' + msg.body.label + '\'\n')
-
-        if(msg.type === "CELL_MODIFIED"){
+        c.val(c.val() + msg.type + ': \'' + msg.body.label + '\'\n')
+        if (msg.type === "CELL_MODIFIED") {
           //only render when the modification involves the selected output
-          if(selectedOutputKey && (selectedOutputKey.id === msg.body.id))
-            this.getValue(selectedProject, selectedOutputKey).then(render)
+          if(selectedOutputKey && (selectedOutputKey.id === msg.body.id)) {
+            getValue(selectedProject, selectedOutputKey).then(render)
+          }
         }
       }
-
       //listens and responds to changes on flux using our handler
       createWebSocket(selectedProject, notificationHandler)
-
       // now go fetch the project's keys
       fetchKeys()
     })
@@ -87,12 +85,12 @@ function fetchProjects() {
  */
 function fetchKeys() {
   // get the project's keys from flux (returns a promise)
-  getKeys(selectedProject).then((data) => {
+  getKeys(selectedProject).then(function(data) {
     // assign the keys to the global variable 'projectKeys'
     projectKeys = data.entities
     // for each project, create an option for the select box with
     // the key.id as the value and the key.label as the label
-    let options = projectKeys.map((key) => {
+    var options = projectKeys.map(function(key) {
       return $('<option>').val(key.id).text(key.label)
     })
     // insert the default text as the first option
@@ -104,9 +102,9 @@ function fetchKeys() {
   })
 }
 
-const render = (data) => {
+function render(data) {
   //check to see if data is available to render
-  if(!data){
+  if (!data) {
     //empty the display and hide the geometry viewport
     $('#display .content').empty()
     $('#display').show()
@@ -122,13 +120,13 @@ const render = (data) => {
   } else {
     // not geometry, so figure out how to best render the type
     // check if the value is a number
-    let d = parseFloat(data.value)
+    var d = parseFloat(data.value)
     // otherwise make it into a string
     if (isNaN(d)) d = JSON.stringify(data.value)
     else d = d + ''
     // calculate the approximate display size for the text
     // based on the ammount of content (length)
-    let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
+    var size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
     // apply the new text size to the content
     $('#display .content').html(d).css('font-size', size+'em')
     // if the content is json
@@ -150,13 +148,13 @@ const render = (data) => {
  */
 function initKeys() {
   // attach a function to the change event of the viewport's key select box
-  $('#output select.key').on('change', (e) => {
+  $('#output select.key').on('change', function(e) {
     // find the key that was clicked on
-    selectedOutputKey = projectKeys.filter((k) => k.id === e.target.value)[0]
+    selectedOutputKey = projectKeys.filter(function(k) { return k.id === e.target.value })[0]
     
     if (selectedProject && selectedOutputKey) {
       // get the value of the key (returns a promise)
-      getValue(selectedProject, selectedOutputKey).then((data) => {
+      getValue(selectedProject, selectedOutputKey).then(function(data) {
         // and render it
         render(data)
       })
@@ -164,17 +162,17 @@ function initKeys() {
   })
 
   // attach a function to the change event of the slider's (input) select box
-  $('#input select.key').on('change', (e) => {
+  $('#input select.key').on('change', function(e) {
     // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
+    var selectedKey = projectKeys.filter(function(k) { return k.id === e.target.value })[0]
     // and attach it to the slider so we can grab it later
     $('#input input').data('key', selectedKey)
   })
 
   // attach a function to the change event of the slider
-  $('#input input').on('change', (e) => {
+  $('#input input').on('change', function(e) {
     // find the key that was clicked on (we attached it in the previous function)
-    let key = $(e.target).data('key')
+    var key = $(e.target).data('key')
     // update the display with the new value
     $('#input .label .value').html(e.target.value)
     // and if we have a key
@@ -192,17 +190,17 @@ function initKeys() {
  * Initialize the create key input + button.
  */
 function initCreate() {
-  $('#create .button').on('click', (e) => {
+  $('#create .button').on('click', function(e) {
     // get the input field
-    let input = $(e.target).parent().find('input')
+    var input = $(e.target).parent().find('input')
     // get the input field value
-    let value = input.val()
+    var value = input.val()
     // check we have a name
     if (value === '') return
     // check we have a project selected
     if (!selectedProject) return
     // create the key (returns a promise)
-    createKey(selectedProject, value).then(() => {
+    createKey(selectedProject, value).then(function() {
       // clear the input
       input.val('')
       // refresh the key select boxes
@@ -243,7 +241,7 @@ function animate() {
  */
 function init() {
   // check that the user is logged in, otherwise show the login page
-  checkLogin().then(() => {
+  checkLogin().then(function() {
     // if logged in, make sure the login page is hidden
     hideLogin()
     // create the viewport
