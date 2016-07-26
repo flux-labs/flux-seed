@@ -280,10 +280,25 @@ select{
   padding: 1em;
 }
 
-#viewstack .label {
+#output .label {
   left: 2em;
 }
 
+#notifications{
+  position: relative;
+  display: flex;
+  height: 49%;
+  box-sizing: border-box;
+  padding: 1em 2em 2em 1em;
+}
+
+#console{
+  font-family:'courier new';
+  border: 1px solid #e8e8e8;
+  position:relative;
+  width:100%;
+  height:100%;
+}
 
 select {
   width: 100%;
