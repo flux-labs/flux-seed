@@ -19,7 +19,7 @@ function showLogin() {
   // show the login button
   $('#login').css('display', 'flex')
   // attach event handler to the login button
-  $('#login .button').click(() => { helpers.redirectToFluxLogin() })
+  $('#login .button').click(function() { helpers.redirectToFluxLogin() })
 }
 
 /**
@@ -228,8 +228,8 @@ function init() {
   // Check if we're coming back from Flux with the login credentials.
   helpers.storeFluxUser()
   // check that the user is logged in, otherwise show the login page
-    .then(() => helpers.isLoggedIn())
-    .then(isLoggedIn => {
+    .then(function() { helpers.isLoggedIn() })
+    .then(function(isLoggedIn) {
       if (isLoggedIn) {
         // if logged in, make sure the login page is hidden
         hideLogin()
