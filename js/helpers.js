@@ -1,8 +1,8 @@
 // instantiate the Flux SDK with your appliation key
-let sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
-let helpers = new FluxHelpers(sdk)
-let dataTables = {}
-let user = null
+var sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
+var helpers = new FluxHelpers(sdk)
+var user = null
+var dataTables = {}
 
 /**
  * Get the Flux user.
@@ -19,7 +19,7 @@ function getUser() {
  */
 function getDataTable(project) {
   if (!(project.id in dataTables)) {
-    let dt = getUser().getDataTable(project.id)
+    var dt = getUser().getDataTable(project.id)
     dataTables[project.id] = { table: dt, handlers: {}, websocketOpen: false }
   }
   return dataTables[project.id]
@@ -33,76 +33,61 @@ function getProjects() {
 }
 
 /**
- * Get a list of the project's keys.
+ * Get a list of the project's cells (keys).
  */
-function getKeys(project) {
+function getCells(project) {
   return getDataTable(project).table.listCells()
 }
 
 /**
- * Get a specific project key.
+ * Get a specific project cell (key).
  */
-function getKey(project, key) {
-  return getDataTable(project).table.getCell(key.id)
+function getCell(project, cell) {
+  return getDataTable(project).table.getCell(cell.id)
 }
 
 /**
- * Create a project key in Flux.
+ * Create a project cell (key) in Flux.
  */
-function createKey(project, name) {
-  let dt = getDataTable(project).table
+function createCell(project, name) {
+  var dt = getDataTable(project).table
   return dt.createCell(name, {description: name, value: ''})
 }
 
 /**
- * Get the value contained in a key.
+ * Get the value contained in a cell (key).
  */
-function getValue(project, key) {
-  return getKey(project, key).fetch()
+function getValue(project, cell) {
+  return getCell(project, cell).fetch()
 }
 
 /**
- * Update the value in a project key.
+ * Update the value in a project cell (key).
  */
-function updateKeyValue(project, key, value) {
-  let cell = getUser().getCell(project.id, key.id)
-  cell.update({value: value})
+function updateCellValue(project, cell, value) {
+  var cell = getUser().getCell(project.id, key.id)
+  return cell.update({value: value})
 }
 
 /**
- * Subscribe to the changes in a key with websockets.
+ * Creates a websocket for a project that listens for data table events, and calls 
+ * the supplied handler function
  */
-function onKeyChange(project, key, cb) {
-  let pid = project.id
-  let kid = key.id
-  let dt = getDataTable(project)
-  let options = {
-    onOpen: () => console.log('Websocket opened for '+ pid + ' ' + kid + '.'),
-    onError: () => console.log('Websocket error for '+ pid + ' ' + kid + '.')
-  }
-
-  // function that calls the correct handlers for particular key ids, if set.
-  const websocketRefHandler = (msg) => {
-    console.log('Notification received.', msg)
-    if (dt.handlers.hasOwnProperty(msg.body.id)) {
-      console.log('Calling handlers for '+ pid + ' ' + kid + '.')
-      dt.handlers[msg.body.id](msg)
-    } else console.log('Received a notification, but key id is not matched by any callback handlers.')
-  }
-
-  // the handler for this key
-  dt.handlers[kid] = (msg) => {
-    if (msg.body.id === kid) {
-      this.getValue(project, key).then(cb)
-    }
+function createWebSocket(project, notificationHandler){
+  var dataTable = getDataTable(project)
+  var options = {
+    onOpen: function() { console.log('Websocket opened.') },
+    onError: function() { console.log('Websocket error.') }
   }
 
   // if this data table doesn't have websockets open
-  if (!dt.websocketOpen) {
-    dt.websocketOpen = true
+  if (!dataTable.websocketOpen) {
+    dataTable.websocketOpen = true
     // open them
-    dt.table.openWebSocket(options)
+    dataTable.table.openWebSocket(options)
+
     // and attach the handler we created above
-    dt.table.addWebSocketHandler(websocketRefHandler)
+    if(notificationHandler)
+      dataTable.table.addWebSocketHandler(notificationHandler)
   }
 }
