@@ -71,41 +71,41 @@ function createProject(name) {
 }
 
 /**
- * Get a list of the project's keys.
+ * Get a list of the project's cells (keys).
  */
-function getKeys(project) {
+function getCells(project) {
   return getDataTable(project).table.listCells()
 }
 
 /**
- * Get a specific project key.
+ * Get a specific project cell (key).
  */
-function getKey(project, key) {
-  return getDataTable(project).table.getCell(key.id)
+function getCell(project, cell) {
+  return getDataTable(project).table.getCell(cell.id)
 }
 
 /**
- * Create a project key in Flux.
+ * Create a project cell (key) in Flux.
  */
-function createKey(project, name) {
+function createCell(project, name) {
   var dt = getDataTable(project).table
   return dt.createCell(name, {description: name, value: ''})
   // return new sdk.Cell(getFluxCredentials(), project.id, name)
 }
 
 /**
- * Get the value contained in a key.
+ * Get the value contained in a cell (key).
  */
-function getValue(project, key) {
-  return getKey(project, key).fetch()
+function getValue(project, cell) {
+  return getCell(project, cell).fetch()
 }
 
 /**
- * Update the value in a project key.
+ * Update the value in a project cell (key).
  */
-function updateKeyValue(project, key, value) {
+function updateCellValue(project, cell, value) {
   var credentials = getFluxCredentials()
-  var cell = new sdk.Cell(credentials, project.id, key.id)
+  var cell = new sdk.Cell(credentials, project.id, cell.id)
   cell.update({value: value})
 }
 

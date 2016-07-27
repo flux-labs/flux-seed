@@ -1,4 +1,4 @@
-var viewport, projects, selectedProject, projectKeys, selectedOutputKey
+var viewport, projects, selectedProject, projectCells, selectedOutputCell
 
 // Check if we're coming back from Flux with the login credentials.
 setFluxLogin()
@@ -53,8 +53,8 @@ function fetchProjects() {
     options.unshift('<option>Please select a project</option>')
     // make sure the select box is empty and then insert the new options
     $('select.project').empty().append(options)
-    // empty out the project key select boxes
-    $('select.key').empty()
+    // empty out the project cell (key) select boxes
+    $('select.cell').empty()
     // attach a function to the select box change event
     $('select.project').on('change', function(e) {
       // find the project that was clicked on, and assign it to the global
@@ -67,36 +67,36 @@ function fetchProjects() {
         c.val(c.val() + msg.type + ': \'' + msg.body.label + '\'\n')
         if (msg.type === "CELL_MODIFIED") {
           //only render when the modification involves the selected output
-          if(selectedOutputKey && (selectedOutputKey.id === msg.body.id)) {
-            getValue(selectedProject, selectedOutputKey).then(render)
+          if(selectedOutputCell && (selectedOutputCell.id === msg.body.id)) {
+            getValue(selectedProject, selectedOutputCell).then(render)
           }
         }
       }
       //listens and responds to changes on flux using our handler
       createWebSocket(selectedProject, notificationHandler)
-      // now go fetch the project's keys
-      fetchKeys()
+      // now go fetch the project's cells (keys)
+      fetchCells()
     })
   })
 }
 
 /**
- * Fetch the keys of the currently selected project from Flux.
+ * Fetch the cells (keys) of the currently selected project from Flux.
  */
-function fetchKeys() {
-  // get the project's keys from flux (returns a promise)
-  getKeys(selectedProject).then(function(data) {
-    // assign the keys to the global variable 'projectKeys'
-    projectKeys = data.entities
+function fetchCells() {
+  // get the project's cells (keys) from flux (returns a promise)
+  getCells(selectedProject).then(function(data) {
+    // assign the cells to the global variable 'projectCells'
+    projectCells = data.entities
     // for each project, create an option for the select box with
-    // the key.id as the value and the key.label as the label
-    var options = projectKeys.map(function(key) {
-      return $('<option>').val(key.id).text(key.label)
+    // the cell.id as the value and the cell.label as the label
+    var options = projectCells.map(function(cell) {
+      return $('<option>').val(cell.id).text(cell.label)
     })
     // insert the default text as the first option
     options.unshift('<option>Please select a key</option>')
     // make sure the select box is empty and then insert the new options
-    $('select.key').empty().append(options)
+    $('select.cell').empty().append(options)
     //clear the display by rendering with null data
     render(null)
   })
@@ -144,17 +144,17 @@ function render(data) {
 }
 
 /**
- * Attach events to the key selection boxes.
+ * Attach events to the cell (key) selection boxes.
  */
-function initKeys() {
-  // attach a function to the change event of the viewport's key select box
-  $('#output select.key').on('change', function(e) {
-    // find the key that was clicked on
-    selectedOutputKey = projectKeys.filter(function(k) { return k.id === e.target.value })[0]
+function initCells() {
+  // attach a function to the change event of the viewport's cell (key) select box
+  $('#output select.cell').on('change', function(e) {
+    // find the cell that was clicked on
+    selectedOutputCell = projectCells.filter(function(k) { return k.id === e.target.value })[0]
     
-    if (selectedProject && selectedOutputKey) {
-      // get the value of the key (returns a promise)
-      getValue(selectedProject, selectedOutputKey).then(function(data) {
+    if (selectedProject && selectedOutputCell) {
+      // get the value of the cell (returns a promise)
+      getValue(selectedProject, selectedOutputCell).then(function(data) {
         // and render it
         render(data)
       })
@@ -162,23 +162,23 @@ function initKeys() {
   })
 
   // attach a function to the change event of the slider's (input) select box
-  $('#input select.key').on('change', function(e) {
-    // find the key that was clicked on
-    var selectedKey = projectKeys.filter(function(k) { return k.id === e.target.value })[0]
+  $('#input select.cell').on('change', function(e) {
+    // find the cell that was clicked on
+    var selectedCell = projectCells.filter(function(k) { return k.id === e.target.value })[0]
     // and attach it to the slider so we can grab it later
-    $('#input input').data('key', selectedKey)
+    $('#input input').data('cell', selectedCell)
   })
 
   // attach a function to the change event of the slider
   $('#input input').on('change', function(e) {
-    // find the key that was clicked on (we attached it in the previous function)
-    var key = $(e.target).data('key')
+    // find the cell that was clicked on (we attached it in the previous function)
+    var cell = $(e.target).data('cell')
     // update the display with the new value
     $('#input .label .value').html(e.target.value)
-    // and if we have a key
-    if (key) {
-      // tell flux to update the key with this new value
-      updateKeyValue(selectedProject, key, parseFloat(e.target.value))
+    // and if we have a cell
+    if (cell) {
+      // tell flux to update the cell with this new value
+      updateCellValue(selectedProject, cell, parseFloat(e.target.value))
     }
   })
 
@@ -187,7 +187,7 @@ function initKeys() {
 }
 
 /**
- * Initialize the create key input + button.
+ * Initialize the create cell (key) input + button.
  */
 function initCreate() {
   $('#create .button').on('click', function(e) {
@@ -199,12 +199,12 @@ function initCreate() {
     if (value === '') return
     // check we have a project selected
     if (!selectedProject) return
-    // create the key (returns a promise)
-    createKey(selectedProject, value).then(function() {
+    // create the cell (key)
+    createCell(selectedProject, value).then(function() {
       // clear the input
       input.val('')
-      // refresh the key select boxes
-      fetchKeys()
+      // refresh the cell (key) select boxes
+      fetchCells()
     })
   })
 }
@@ -246,9 +246,9 @@ function init() {
     hideLogin()
     // create the viewport
     initViewport()
-    // prepare the key select boxes
-    initKeys()
-    // prepare the create key input + button
+    // prepare the cell (key) select boxes
+    initCells()
+    // prepare the create cell (key) input + button
     initCreate()
     // get the user's projects from Flux
     fetchProjects()
