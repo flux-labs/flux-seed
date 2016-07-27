@@ -1,48 +1,17 @@
 // instantiate the Flux SDK with your appliation key
 var sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
+var helpers = new FluxHelpers(sdk)
+var user = null
 var dataTables = {}
-
-/**
- * Redirect the user to the Flux login page.
- */
-function getFluxLogin() {
-  window.location.replace(sdk.getAuthorizeUrl(getState(), getNonce()))
-}
-
-/**
- * Check if we're coming from Flux with the credentials, and store them.
- */
-function setFluxLogin() {
-  // if the user is logged out and the url contains the access token
-  if (!getFluxCredentials() && window.location.hash.match(/access_token/)) {
-    // get the credentials from Flux (returns a promise)
-    sdk.exchangeCredentials(getState(), getNonce())
-      // and set them in local storage
-      .then(function(credentials) { setFluxCredentials(credentials) })
-      // and clean up the url
-      .then(function() { window.location.replace(config.url) })
-  }
-}
-
-/**
- * Get the credentials from local storage.
- */
-function getFluxCredentials() {
-  return JSON.parse(localStorage.getItem('fluxCredentials'))
-}
-
-/**
- * Set the credentials in local storage.
- */
-function setFluxCredentials(credentials) {
-  localStorage.setItem('fluxCredentials', JSON.stringify(credentials))
-}
 
 /**
  * Get the Flux user.
  */
 function getUser() {
-  return sdk.getUser(getFluxCredentials())
+  if (!user) {
+    user = helpers.getUser()
+  }
+  return user
 }
 
 /**
@@ -50,7 +19,7 @@ function getUser() {
  */
 function getDataTable(project) {
   if (!(project.id in dataTables)) {
-    var dt = new sdk.Project(getFluxCredentials(), project.id).getDataTable()
+    var dt = getUser().getDataTable(project.id)
     dataTables[project.id] = { table: dt, handlers: {}, websocketOpen: false }
   }
   return dataTables[project.id]
@@ -61,13 +30,6 @@ function getDataTable(project) {
  */
 function getProjects() {
   return getUser().listProjects()
-}
-
-/**
- * Create a project in Flux.
- */
-function createProject(name) {
-  return sdk.Project.createProject(getFluxCredentials(), name)
 }
 
 /**
@@ -90,7 +52,6 @@ function getCell(project, cell) {
 function createCell(project, name) {
   var dt = getDataTable(project).table
   return dt.createCell(name, {description: name, value: ''})
-  // return new sdk.Cell(getFluxCredentials(), project.id, name)
 }
 
 /**
@@ -104,9 +65,8 @@ function getValue(project, cell) {
  * Update the value in a project cell (key).
  */
 function updateCellValue(project, cell, value) {
-  var credentials = getFluxCredentials()
-  var cell = new sdk.Cell(credentials, project.id, cell.id)
-  cell.update({value: value})
+  var cell = getUser().getCell(project.id, key.id)
+  return cell.update({value: value})
 }
 
 /**
@@ -130,35 +90,4 @@ function createWebSocket(project, notificationHandler){
     if(notificationHandler)
       dataTable.table.addWebSocketHandler(notificationHandler)
   }
-}
-
-/**
- * Generate a random token.
- */
-function generateRandomToken() {
-  var tokenLength = 24
-  var randomArray = []
-  var characterSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  for (var i = 0; i < tokenLength; i++) {
-    randomArray.push(Math.floor(Math.random() * tokenLength))
-  }
-  return btoa(randomArray.join('')).slice(0, 48)
-}
-
-/**
- * Generate a token for use in the login.
- */
-function getState() {
-  var state = localStorage.getItem('state') || generateRandomToken()
-  localStorage.setItem('state', state)
-  return state
-}
-
-/**
- * Generate a token for use in the login.
- */
-function getNonce() {
-  var nonce = localStorage.getItem('nonce') || generateRandomToken()
-  localStorage.setItem('nonce', nonce)
-  return nonce
 }

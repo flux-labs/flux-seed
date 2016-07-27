@@ -1,20 +1,5 @@
 var viewport, projects, selectedProject, projectCells, selectedOutputCell
 
-// Check if we're coming back from Flux with the login credentials.
-setFluxLogin()
-
-/**
- * Check if the user is logged in.
- */
-function checkLogin() {
-  // get the credentials from local storage
-  var credentials = getFluxCredentials()
-  // if the user doesn't have credentials, reject the promise
-  if (!credentials) return Promise.reject()
-  // else resolve it
-  return Promise.resolve()
-}
-
 /**
  * Hide the login page and attach events to the logout button.
  */
@@ -28,13 +13,13 @@ function hideLogin() {
 /**
  * Show the login page and attach events to the login button.
  */
-function showLogin(err) {
-  // remove the credentials from local storage
-  localStorage.removeItem('fluxCredentials')
+function showLogin() {
+  // ensure that the user is logged out and no longer stored on the page
+  helpers.logout()
   // show the login button
   $('#login').css('display', 'flex')
   // attach event handler to the login button
-  $('#login .button').click(getFluxLogin)
+  $('#login .button').click(() => { helpers.redirectToFluxLogin() })
 }
 
 /**
@@ -240,19 +225,26 @@ function animate() {
  * Start the application.
  */
 function init() {
+  // Check if we're coming back from Flux with the login credentials.
+  helpers.storeFluxUser()
   // check that the user is logged in, otherwise show the login page
-  checkLogin().then(function() {
-    // if logged in, make sure the login page is hidden
-    hideLogin()
-    // create the viewport
-    initViewport()
-    // prepare the cell (key) select boxes
-    initCells()
-    // prepare the create cell (key) input + button
-    initCreate()
-    // get the user's projects from Flux
-    fetchProjects()
-  }).catch(showLogin)
+    .then(() => helpers.isLoggedIn())
+    .then(isLoggedIn => {
+      if (isLoggedIn) {
+        // if logged in, make sure the login page is hidden
+        hideLogin()
+        // create the viewport
+        initViewport()
+        // prepare the cell (key) select boxes
+        initCells()
+        // prepare the create key input + button
+        initCreate()
+        // get the user's projects from Flux
+        fetchProjects()
+      } else {
+        showLogin();
+      }
+    })
 }
 
 // When the window is done loading, start the application.
