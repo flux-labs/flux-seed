@@ -205,20 +205,7 @@ function initViewport() {
   // set up default lighting for the viewport
   viewport.setupDefaultLighting()
   // set the viewport background to white
-  viewport._renderer.setClearColor(0xffffff)
-  // remove the axis lines
-  viewport._renderer._helpersScene.remove(viewport._renderer._helpers)
-  animate()
-}
-
-/**
- * Start the viewport's render loop.
- */
-function animate() {
-  // on every frame, call this function
-  requestAnimationFrame(animate)
-  // and render the viewport
-  viewport.render()
+  viewport.setClearColor(0xffffff)
 }
 
 /**
