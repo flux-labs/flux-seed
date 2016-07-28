@@ -1,5 +1,5 @@
 // instantiate the Flux SDK with your appliation key
-var sdk = new FluxSdk(config.flux_key, { redirectUri: config.url, fluxUrl: config.flux_url })
+var sdk = new FluxSdk(config.flux_client_id, { redirectUri: config.url, fluxUrl: config.flux_url })
 var helpers = new FluxHelpers(sdk)
 var user = null
 var dataTables = {}
@@ -65,7 +65,7 @@ function getValue(project, cell) {
  * Update the value in a project cell (key).
  */
 function updateCellValue(project, cell, value) {
-  var cell = getUser().getCell(project.id, key.id)
+  var cell = getUser().getCell(project.id, cell.id)
   return cell.update({value: value})
 }
 
