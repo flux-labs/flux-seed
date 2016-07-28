@@ -228,7 +228,7 @@ function init() {
   // Check if we're coming back from Flux with the login credentials.
   helpers.storeFluxUser()
   // check that the user is logged in, otherwise show the login page
-    .then(function() { helpers.isLoggedIn() })
+    .then(function() { return helpers.isLoggedIn() })
     .then(function(isLoggedIn) {
       if (isLoggedIn) {
         // if logged in, make sure the login page is hidden
