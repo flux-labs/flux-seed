@@ -70,11 +70,19 @@ body {
   width: 50%;
 }
 
+#output{
+  height:100%;
+  position:relative;
+  box-sizing: border-box;
+  padding: 2em 1em 2em 2em;
+  display: flex;
+  flex-direction: column;
+}
+
 #geometry {
   height: 100%;
   position: relative;
   box-sizing: border-box;
-  padding: 2em 1em 2em 2em;
   display: flex;
   flex-direction: column;
 }
@@ -86,13 +94,15 @@ body {
   position: relative;
 }
 
-#output {
+#display {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 50%;
+  display: none;
+  height: 100%;
   box-sizing: border-box;
   padding: 1em 2em 1em 1em;
+  border: 1px solid #e8e8e8;
+  border-bottom: 0;
+  overflow: auto;
 }
 
 #input {
@@ -136,21 +146,6 @@ body {
   top: 0;
 }
 
-#view-error {
-  width: 100%;
-  height: 100%;
-  background: #fff;
-  position: absolute;
-  z-index: 10000;
-  font-size: 1.4em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-}
-
 #title {
   padding: 1em 2em;
   flex-grow: 1;
@@ -172,23 +167,13 @@ body {
   height: 100%;
 }
 
-#display {
-  border: 1px solid #e8e8e8;
-  border-bottom: 0;
-  flex-grow: 2;
-  overflow: auto;
-  padding: 1em;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-}
-
 #display .content {
   font-size: 1.5em;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  height:100%;
 }
 
 #logout, #create .button {
@@ -296,11 +281,23 @@ select{
 }
 
 #output .label {
-  top: 1em;
+  left: 2em;
 }
 
-#geometry .label {
-  left: 2em;
+#notifications{
+  position: relative;
+  display: flex;
+  height: 49%;
+  box-sizing: border-box;
+  padding: 1em 2em 2em 1em;
+}
+
+#console{
+  font-family:'courier new';
+  border: 1px solid #e8e8e8;
+  position:relative;
+  width:100%;
+  height:100%;
 }
 
 select {

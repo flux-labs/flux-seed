@@ -1,19 +1,4 @@
-let viewport, projects, selectedProject, projectKeys
-
-// Check if we're coming back from Flux with the login credentials.
-setFluxLogin()
-
-/**
- * Check if the user is logged in.
- */
-function checkLogin() {
-  // get the credentials from local storage
-  let credentials = getFluxCredentials()
-  // if the user doesn't have credentials, reject the promise
-  if (!credentials) return Promise.reject()
-  // else resolve it
-  return Promise.resolve()
-}
+var viewport, projects, selectedProject, projectCells, selectedOutputCell
 
 /**
  * Hide the login page and attach events to the logout button.
@@ -28,13 +13,13 @@ function hideLogin() {
 /**
  * Show the login page and attach events to the login button.
  */
-function showLogin(err) {
-  // remove the credentials from local storage
-  localStorage.removeItem('fluxCredentials')
+function showLogin() {
+  // ensure that the user is logged out and no longer stored on the page
+  helpers.logout()
   // show the login button
   $('#login').css('display', 'flex')
   // attach event handler to the login button
-  $('#login .button').click(getFluxLogin)
+  $('#login .button').click(function() { helpers.redirectToFluxLogin() })
 }
 
 /**
@@ -42,137 +27,143 @@ function showLogin(err) {
  */
 function fetchProjects() {
   // get the user's projects from flux (returns a promise)
-  getProjects().then((data) => {
+  getProjects().then(function(data) {
     projects = data.entities
     // for each project, create an option for the select box with
     // the project.id as the value and the project.name as the label
-    let options = projects.map((project) => {
+    var options = projects.map(function(project) {
       return $('<option>').val(project.id).text(project.name)
     })
     // insert the default text as the first option
     options.unshift('<option>Please select a project</option>')
     // make sure the select box is empty and then insert the new options
     $('select.project').empty().append(options)
-    // empty out the project key select boxes
-    $('select.key').empty()
+    // empty out the project cell (key) select boxes
+    $('select.cell').empty()
     // attach a function to the select box change event
-    $('select.project').on('change', (e) => {
+    $('select.project').on('change', function(e) {
       // find the project that was clicked on, and assign it to the global
       // variable 'selectedProject'
-      selectedProject = projects.filter((p) => p.id === e.target.value)[0]
-      // now go fetch the project's keys
-      fetchKeys()
+      selectedProject = projects.filter(function(p) { return p.id === e.target.value })[0]
+      var c = $('#console')
+      c.val('')
+      var notificationHandler = function(msg) {
+        //write all events to the app console
+        c.val(c.val() + msg.type + ': \'' + msg.body.label + '\'\n')
+        if (msg.type === "CELL_MODIFIED") {
+          //only render when the modification involves the selected output
+          if(selectedOutputCell && (selectedOutputCell.id === msg.body.id)) {
+            getValue(selectedProject, selectedOutputCell).then(render)
+          }
+        }
+      }
+      //listens and responds to changes on flux using our handler
+      createWebSocket(selectedProject, notificationHandler)
+      // now go fetch the project's cells (keys)
+      fetchCells()
     })
   })
 }
 
 /**
- * Fetch the keys of the currently selected project from Flux.
+ * Fetch the cells (keys) of the currently selected project from Flux.
  */
-function fetchKeys() {
-  // get the project's keys from flux (returns a promise)
-  getKeys(selectedProject).then((data) => {
-    // assign the keys to the global variable 'projectKeys'
-    projectKeys = data.entities
+function fetchCells() {
+  // get the project's cells (keys) from flux (returns a promise)
+  getCells(selectedProject).then(function(data) {
+    // assign the cells to the global variable 'projectCells'
+    projectCells = data.entities
     // for each project, create an option for the select box with
-    // the key.id as the value and the key.label as the label
-    let options = projectKeys.map((key) => {
-      return $('<option>').val(key.id).text(key.label)
+    // the cell.id as the value and the cell.label as the label
+    var options = projectCells.map(function(cell) {
+      return $('<option>').val(cell.id).text(cell.label)
     })
     // insert the default text as the first option
     options.unshift('<option>Please select a key</option>')
     // make sure the select box is empty and then insert the new options
-    $('select.key').empty().append(options)
+    $('select.cell').empty().append(options)
+    //clear the display by rendering with null data
+    render(null)
   })
 }
 
-/**
- * Attach events to the key selection boxes.
- */
-function initKeys() {
-  // attach a function to the change event of the viewport's key select box
-  $('#geometry select.key').on('change', (e) => {
-    // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
-    // if we have both a project and a key
-    const render = (data) => {
-      // check if its valid geometry
-      if (FluxViewport.isKnownGeom(data.value)) {
-        // and add it to the viewport
-        viewport.setGeometryEntity(data.value)
-      } else {
-        // show error
-        $('#view-error').show()
-      }
+function render(data) {
+  //check to see if data is available to render
+  if (!data) {
+    //empty the display and hide the geometry viewport
+    $('#display .content').empty()
+    $('#display').show()
+    $('#geometry').hide()
+  }
+  //check to see if the data is a known type of geometry
+  else if (FluxViewport.isKnownGeom(data.value)) {
+    //add it to the viewport
+    viewport.setGeometryEntity(data.value)
+    //swap the display types
+    $('#geometry').show()
+    $('#display').hide()
+  } else {
+    // not geometry, so figure out how to best render the type
+    // check if the value is a number
+    var d = parseFloat(data.value)
+    // otherwise make it into a string
+    if (isNaN(d)) d = JSON.stringify(data.value)
+    else d = d + ''
+    // calculate the approximate display size for the text
+    // based on the ammount of content (length)
+    var size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
+    // apply the new text size to the content
+    $('#display .content').html(d).css('font-size', size+'em')
+    // if the content is json
+    if (d[0] === '[' || d[0] === '{') {
+      // align left
+      $('#display .content').css('text-align', 'left')
+    } else {
+      // align center
+      $('#display .content').css('text-align', 'center')
     }
-    if (selectedProject && selectedKey) {
-      // get the value of the key (returns a promise)
-      $('#view-error').hide()
-      getValue(selectedProject, selectedKey).then((data) => {
-        // and render it with the function above
-        render(data)
-        // whenever the data on Flux changes, get the live update
-        // and re-render it (websocket connection)
-        onKeyChange(selectedProject, selectedKey, render)
-      })
-    }
-  })
+    //swap the display types
+    $('#geometry').hide()
+    $('#display').show()
+  }
+}
 
-  // attach a function to the change event of the output select box
-  $('#output select.key').on('change', (e) => {
-    // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
-    const render = (data) => {
-      // check if the value is a number
-      let d = parseFloat(data.value)
-      // otherwise make it into a string
-      if (isNaN(d)) d = JSON.stringify(data.value)
-      else d = d + ''
-      // calculate the approximate display size for the text
-      // based on the ammount of content (length)
-      let size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
-      // apply the new text size to the content
-      $('#display .content').html(d).css('font-size', size+'em')
-      // if the content is json
-      if (d[0] === '[' || d[0] === '{') {
-        // align left
-        $('#display .content').css('text-align', 'left')
-      } else {
-        // align center
-        $('#display .content').css('text-align', 'center')
-      }
-    }
-    // if we have both a project and a key
-    if (selectedProject && selectedKey) {
-      // get the value of the key (returns a promise)
-      getValue(selectedProject, selectedKey).then((data) => {
-        // and render it with the function above
+/**
+ * Attach events to the cell (key) selection boxes.
+ */
+function initCells() {
+  // attach a function to the change event of the viewport's cell (key) select box
+  $('#output select.cell').on('change', function(e) {
+    // find the cell that was clicked on
+    selectedOutputCell = projectCells.filter(function(k) { return k.id === e.target.value })[0]
+    
+    if (selectedProject && selectedOutputCell) {
+      // get the value of the cell (returns a promise)
+      getValue(selectedProject, selectedOutputCell).then(function(data) {
+        // and render it
         render(data)
-        // whenever the data on Flux changes, get the live update
-        // and re-render it (websocket connection)
-        onKeyChange(selectedProject, selectedKey, render)
       })
     }
   })
 
   // attach a function to the change event of the slider's (input) select box
-  $('#input select.key').on('change', (e) => {
-    // find the key that was clicked on
-    let selectedKey = projectKeys.filter((k) => k.id === e.target.value)[0]
+  $('#input select.cell').on('change', function(e) {
+    // find the cell that was clicked on
+    var selectedCell = projectCells.filter(function(k) { return k.id === e.target.value })[0]
     // and attach it to the slider so we can grab it later
-    $('#input input').data('key', selectedKey)
+    $('#input input').data('cell', selectedCell)
   })
 
   // attach a function to the change event of the slider
-  $('#input input').on('change', (e) => {
-    // find the key that was clicked on (we attached it in the previous function)
-    let key = $(e.target).data('key')
+  $('#input input').on('change', function(e) {
+    // find the cell that was clicked on (we attached it in the previous function)
+    var cell = $(e.target).data('cell')
     // update the display with the new value
     $('#input .label .value').html(e.target.value)
-    // and if we have a key
-    if (key) {
-      // tell flux to update the key with this new value
-      updateKeyValue(selectedProject, key, parseFloat(e.target.value))
+    // and if we have a cell
+    if (cell) {
+      // tell flux to update the cell with this new value
+      updateCellValue(selectedProject, cell, parseFloat(e.target.value))
     }
   })
 
@@ -181,24 +172,24 @@ function initKeys() {
 }
 
 /**
- * Initialize the create key input + button.
+ * Initialize the create cell (key) input + button.
  */
 function initCreate() {
-  $('#create .button').on('click', (e) => {
+  $('#create .button').on('click', function(e) {
     // get the input field
-    let input = $(e.target).parent().find('input')
+    var input = $(e.target).parent().find('input')
     // get the input field value
-    let value = input.val()
+    var value = input.val()
     // check we have a name
     if (value === '') return
     // check we have a project selected
     if (!selectedProject) return
-    // create the key (returns a promise)
-    createKey(selectedProject, value).then(() => {
+    // create the cell (key)
+    createCell(selectedProject, value).then(function() {
       // clear the input
       input.val('')
-      // refresh the key select boxes
-      fetchKeys()
+      // refresh the cell (key) select boxes
+      fetchCells()
     })
   })
 }
@@ -234,19 +225,26 @@ function animate() {
  * Start the application.
  */
 function init() {
+  // Check if we're coming back from Flux with the login credentials.
+  helpers.storeFluxUser()
   // check that the user is logged in, otherwise show the login page
-  checkLogin().then(() => {
-    // if logged in, make sure the login page is hidden
-    hideLogin()
-    // create the viewport
-    initViewport()
-    // prepare the key select boxes
-    initKeys()
-    // prepare the create key input + button
-    initCreate()
-    // get the user's projects from Flux
-    fetchProjects()
-  }).catch(showLogin)
+    .then(function() { helpers.isLoggedIn() })
+    .then(function(isLoggedIn) {
+      if (isLoggedIn) {
+        // if logged in, make sure the login page is hidden
+        hideLogin()
+        // create the viewport
+        initViewport()
+        // prepare the cell (key) select boxes
+        initCells()
+        // prepare the create key input + button
+        initCreate()
+        // get the user's projects from Flux
+        fetchProjects()
+      } else {
+        showLogin();
+      }
+    })
 }
 
 // When the window is done loading, start the application.
