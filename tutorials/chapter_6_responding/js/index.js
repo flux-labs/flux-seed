@@ -22,6 +22,69 @@ function showLogin() {
   $('#login .button').click(function() { helpers.redirectToFluxLogin() })
 }
 
+function render(data) {
+  //check to see if data is available to render
+  if (!data) {
+    //empty the display and hide the geometry viewport
+    $('#display .content').empty()
+    $('#display').show()
+    $('#geometry').hide()
+  }
+  //check to see if the data is a known type of geometry
+  else if (FluxViewport.isKnownGeom(data.value)) {
+    //add it to the viewport
+    viewport.setGeometryEntity(data.value)
+    //swap the display types
+    $('#geometry').show()
+    $('#display').hide()
+  } else {
+    // not geometry, so figure out how to best render the type
+    // check if the value is a number
+    var d = parseFloat(data.value)
+    // otherwise make it into a string
+    if (isNaN(d)) d = JSON.stringify(data.value)
+    else d = d + ''
+    // calculate the approximate display size for the text
+    // based on the ammount of content (length)
+    var size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
+    // apply the new text size to the content
+    $('#display .content').html(d).css('font-size', size+'em')
+    // if the content is json
+    if (d[0] === '[' || d[0] === '{') {
+      // align left
+      $('#display .content').css('text-align', 'left')
+    } else {
+      // align center
+      $('#display .content').css('text-align', 'center')
+    }
+    //swap the display types
+    $('#geometry').hide()
+    $('#display').show()
+  }
+}
+
+/**
+ * Fetch the cells (keys) of the currently selected project from Flux.
+ */
+function fetchCells() {
+  // get the project's cells (keys) from flux (returns a promise)
+  getCells(selectedProject).then(function(data) {
+    // assign the cells to the global variable 'projectCells'
+    projectCells = data.entities
+    // for each project, create an option for the select box with
+    // the cell.id as the value and the cell.label as the label
+    var options = projectCells.map(function(cell) {
+      return $('<option>').val(cell.id).text(cell.label)
+    })
+    // insert the default text as the first option
+    options.unshift('<option>Please select a cell</option>')
+    // make sure the select box is empty and then insert the new options
+    $('select.cell').empty().append(options)
+    //clear the display by rendering with null data
+    render(null)
+  })
+}
+
 /**
  * Fetch the user's projects from Flux.
  */
@@ -63,69 +126,6 @@ function fetchProjects() {
       fetchCells()
     })
   })
-}
-
-/**
- * Fetch the cells (keys) of the currently selected project from Flux.
- */
-function fetchCells() {
-  // get the project's cells (keys) from flux (returns a promise)
-  getCells(selectedProject).then(function(data) {
-    // assign the cells to the global variable 'projectCells'
-    projectCells = data.entities
-    // for each project, create an option for the select box with
-    // the cell.id as the value and the cell.label as the label
-    var options = projectCells.map(function(cell) {
-      return $('<option>').val(cell.id).text(cell.label)
-    })
-    // insert the default text as the first option
-    options.unshift('<option>Please select a key</option>')
-    // make sure the select box is empty and then insert the new options
-    $('select.cell').empty().append(options)
-    //clear the display by rendering with null data
-    render(null)
-  })
-}
-
-function render(data) {
-  //check to see if data is available to render
-  if (!data) {
-    //empty the display and hide the geometry viewport
-    $('#display .content').empty()
-    $('#display').show()
-    $('#geometry').hide()
-  }
-  //check to see if the data is a known type of geometry
-  else if (FluxViewport.isKnownGeom(data.value)) {
-    //add it to the viewport
-    viewport.setGeometryEntity(data.value)
-    //swap the display types
-    $('#geometry').show()
-    $('#display').hide()
-  } else {
-    // not geometry, so figure out how to best render the type
-    // check if the value is a number
-    var d = parseFloat(data.value)
-    // otherwise make it into a string
-    if (isNaN(d)) d = JSON.stringify(data.value)
-    else d = d + ''
-    // calculate the approximate display size for the text
-    // based on the ammount of content (length)
-    var size = Math.max((1/Math.ceil(d.length/20)) * 3, 0.8)
-    // apply the new text size to the content
-    $('#display .content').html(d).css('font-size', size+'em')
-    // if the content is json
-    if (d[0] === '[' || d[0] === '{') {
-      // align left
-      $('#display .content').css('text-align', 'left')
-    } else {
-      // align center
-      $('#display .content').css('text-align', 'center')
-    }
-    //swap the display types
-    $('#geometry').hide()
-    $('#display').show()
-  }
 }
 
 /**

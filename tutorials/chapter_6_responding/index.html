@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Flux: Seed</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/box.js"></script>
+    <!-- nice font -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+    <!-- who doesn't love jQuery... -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <!-- configuration variables -->
+    <script src="js/config.js"></script>
+    <!-- the Flux Viewport -->
+    <script src="https://npmcdn.com/flux-viewport@0.8.0/dist/flux-viewport-bundle.global.js"></script>
+    <!-- the Flux JS SDK and helpers-->
+    <script src="https://npmcdn.com/flux-sdk-browser@0.4/dist/flux-sdk-min.js"></script>
+    <script src="https://npmcdn.com/flux-sdk-helpers@0.1/dist/flux-sdk-helpers.min.js"></script>
+    <!-- helper functions for using the Flux SDK -->
+    <script src="js/helpers.js"></script>
+    <!-- main application logic -->
+    <script src="js/index.js"></script>
+  </head>
+  <body>
+
+    <!-- login page -->
+    <div id='login'>
+      <div class='button'>Login</div>
+    </div>
+
+    <!-- main container -->
+    <div id='container' class="ui container">
+      <!-- header -->
+      <div id='header'>
+        <div id='title'>
+          <h1>FLUX</h1>
+          <h2>Seed Project</h2>
+        </div>
+        <div id='actions'>
+          <div class='select'><select class='project'></select></div>
+          <div id='logout'>logout</div>
+        </div>
+      </div>
+      <!-- content-->
+      <div id='content'>
+        <!-- left column -->
+        <div class='column'>
+          <div id='output'>
+            <div class='label'>From Flux</div>
+            <!-- geometry viewport -->
+            <div id='geometry'>
+              <div id='view'></div>
+            </div>
+            <!-- general display -->
+            <div id='display'>
+              <div class='content'></div>
+            </div>
+            <div class='select'><select class='cell'></select></div>
+          </div>
+        </div>
+        <!-- right column -->
+        <div class='column'>
+          <!-- input section -->
+          <div id='input'>
+            <div class='label'>To Flux: <span class='value'></span></div>
+            <div id='control'>
+              <input type='range'/>
+            </div>
+            <div class='select'><select class='cell'></select></div>
+          </div>
+          <div id='create'>
+            <input type='text'></input>
+            <div class='button'>CREATE KEY</div>
+          </div>
+          <div id='notifications'>
+            <textarea id='console'></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
