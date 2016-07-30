@@ -79,7 +79,7 @@ function fetchCells() {
       return $('<option>').val(cell.id).text(cell.label)
     })
     // insert the default text as the first option
-    options.unshift('<option>Please select a key</option>')
+    options.unshift('<option>Please select a cell</option>')
     // make sure the select box is empty and then insert the new options
     $('select.cell').empty().append(options)
     //clear the display by rendering with null data
