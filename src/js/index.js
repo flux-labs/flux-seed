@@ -99,6 +99,7 @@ function render(data) {
   else if (FluxViewport.isKnownGeom(data.value)) {
     //add it to the viewport
     viewport.setGeometryEntity(data.value)
+    viewport.focus()
     //swap the display types
     $('#geometry').show()
     $('#display').hide()
